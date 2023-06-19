@@ -1,0 +1,69 @@
+name: Check version change and Run tests
+
+on:
+  push:
+    branches-ignore:
+      - master
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Read .nvmrc
+        run: echo "NVMRC=$(cat .nvmrc)" >> $GITHUB_ENV
+        id: nvm
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ env.NVMRC }}
+
+      - name: Install all dependencies
+        run: npm ci --include=dev
+
+      - name: Run lint
+        run: npm lint
+
+  check-version:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2  # this is required to fetch the previous commit
+
+      - name: Read .nvmrc
+        run: echo "NVMRC=$(cat .nvmrc)" >> $GITHUB_ENV
+        id: nvm
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ env.NVMRC }}
+
+      - name: Install production dependencies only
+        run: npm ci
+
+      - name: Check version change
+        run: |
+          # Get the version in the current commit
+          current_version=$(node -p "require('./package.json').version")
+
+          # Checkout the master branch
+          git fetch origin master
+          git checkout master
+
+          # Get the version in the master branch
+          master_version=$(node -p "require('./package.json').version")
+
+          # Check if the current version is greater than the master version
+          if [[ $(printf "%s\n%s" "$master_version" "$current_version" | sort -V | tail -n 1) != "$master_version" ]]; then
+            echo "Version has increased from $master_version in master to $current_version."
+          else
+            echo "Version has not increased from master!"
+            exit 1
+          fi
