@@ -1,6 +1,6 @@
 {
 	"name": "@vyce/migrate-state-store-mongodb",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "",
 	"type": "module",
 	"main": "./dist/index.umd.cjs",
@@ -19,7 +19,8 @@
 		"dev": "vite",
 		"build": "tsc && vite build",
 		"preview": "vite preview",
-		"lint": "eslint \"src/**/*.ts\" --fix"
+		"lint": "eslint \"src/**/*.ts\" --fix",
+		"version": "npm --no-git-tag-version version"
 	},
 	"repository": {
 		"type": "git",
