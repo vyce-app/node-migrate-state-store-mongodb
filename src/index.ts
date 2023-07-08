@@ -14,7 +14,7 @@ type Migration = {
 
 type Set = {
 	migrations?: Migration[];
-	lastRun?: string;
+	lastRun: string | null;
 };
 
 export class MongoStateStore {
@@ -36,12 +36,14 @@ export class MongoStateStore {
 
 			if (result.length === 0) {
 				console.log('No migrations found, probably running the very first time');
-				return {};
+				return {
+					lastRun: null,
+				};
 			}
 
 			const set: Set = {
 				migrations: result,
-				lastRun: result[0]?.title,
+				lastRun: result[0]?.title ?? null,
 			};
 
 			return set;
