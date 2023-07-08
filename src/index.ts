@@ -17,6 +17,8 @@ type Set = {
 	lastRun: string | null;
 };
 
+type LoadCallback = ((err: Error) => void) & ((error: null, set: Set) => void);
+
 export class MongoStateStore {
 	private readonly collectionName: string;
 
@@ -27,7 +29,7 @@ export class MongoStateStore {
 		this.collectionName = (objectOrHost as Options).collectionName ?? 'migrations';
 	}
 
-	public load(fn: (err?: Error | null, set?: Set) => void): void {
+	public load(fn: LoadCallback): void {
 		this.tryHandle(fn, async db => {
 			const result = await db.collection(this.collectionName)
 				.find({})
@@ -70,7 +72,7 @@ export class MongoStateStore {
 	}
 
 	private tryHandle(
-		fn: (err?: Error | null, set?: Set) => void, actionCallback: (db: Db) => Promise<Set>,
+		fn: LoadCallback, actionCallback: (db: Db) => Promise<Set>,
 	): void {
 		(async () => {
 			let client: MongoClient | null = null;
@@ -80,7 +82,7 @@ export class MongoStateStore {
 				const db = client.db();
 				const result = await actionCallback(db);
 
-				fn(undefined, result);
+				fn(null, result);
 			} catch (err) {
 				fn(err as Error);
 			} finally {
