@@ -17,7 +17,7 @@ type Set = {
 	lastRun: string | null;
 };
 
-type LoadCallback = ((err: Error) => void) & ((error: null, set: Set) => void);
+type LoadCallback = ((error: Error) => void) & ((error: null, set: Set) => void);
 
 export class MongoStateStore {
 	private readonly collectionName: string;
@@ -52,7 +52,7 @@ export class MongoStateStore {
 		});
 	}
 
-	public save(set: Set, fn: (err?: Error | null) => void): void {
+	public save(set: Set, fn: (err: Error | null) => void): void {
 		const { migrations } = set;
 
 		this.tryHandle(fn, async db => {
