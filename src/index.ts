@@ -27,7 +27,7 @@ export class MongoStateStore {
 		this.collectionName = (objectOrHost as Options).collectionName ?? 'migrations';
 	}
 
-	public load(fn: (err?: unknown, set?: Set) => void): void {
+	public load(fn: (err?: Error | null, set?: Set) => void): void {
 		this.tryHandle(fn, async db => {
 			const result = await db.collection(this.collectionName)
 				.find({})
@@ -50,7 +50,7 @@ export class MongoStateStore {
 		});
 	}
 
-	public save(set: Set, fn: (err?: unknown) => void): void {
+	public save(set: Set, fn: (err?: Error | null) => void): void {
 		const { migrations } = set;
 
 		this.tryHandle(fn, async db => {
@@ -70,7 +70,7 @@ export class MongoStateStore {
 	}
 
 	private tryHandle(
-		fn: (err?: unknown, set?: Set) => void, actionCallback: (db: Db) => Promise<Set>,
+		fn: (err?: Error | null, set?: Set) => void, actionCallback: (db: Db) => Promise<Set>,
 	): void {
 		(async () => {
 			let client: MongoClient | null = null;
@@ -82,7 +82,7 @@ export class MongoStateStore {
 
 				fn(undefined, result);
 			} catch (err) {
-				fn(err);
+				fn(err as Error);
 			} finally {
 				if (client) {
 					try {
