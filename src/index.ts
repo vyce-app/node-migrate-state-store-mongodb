@@ -17,7 +17,12 @@ type Set = {
 	lastRun: string | null;
 };
 
-type LoadCallback = ((error: Error) => void) & ((error: null, set: Set) => void);
+type Store = {
+	migrations: Migration[];
+	lastRun?: string;
+};
+
+type LoadCallback = ((error: Error) => void) & ((error: null, store: Store) => void);
 
 export class MongoStateStore {
 	private readonly collectionName: string;
@@ -72,7 +77,7 @@ export class MongoStateStore {
 	}
 
 	private tryHandle(
-		fn: LoadCallback, actionCallback: (db: Db) => Promise<Set>,
+		fn: LoadCallback, actionCallback: (db: Db) => Promise<Set | Store>,
 	): void {
 		(async () => {
 			let client: MongoClient | null = null;
@@ -82,7 +87,7 @@ export class MongoStateStore {
 				const db = client.db();
 				const result = await actionCallback(db);
 
-				fn(null, result);
+				fn(null, result as Store);
 			} catch (err) {
 				fn(err as Error);
 			} finally {
