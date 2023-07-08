@@ -9,7 +9,7 @@ interface Options {
 type Migration = {
 	title: string;
 	description: string;
-	timestamp: number;
+	timestamp: number | null;
 };
 
 type Set = {
